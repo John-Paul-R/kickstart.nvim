@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -231,7 +231,9 @@ require('lazy').setup({
   -- { "LazyVim/LazyVim", import = "lazyvim.plugins" },
   { import = 'kickstart.plugins.debug' },
   { import = 'kickstart.plugins.indent_line' },
-  { import = 'kickstart.plugins.lint' },
+  { import = 'kickstart.plugins.lint', opts = {
+    ignore_errors = true,
+  } },
   { import = 'kickstart.plugins.autopairs' },
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
@@ -255,7 +257,28 @@ require('lazy').setup({
   { 'numToStr/Comment.nvim', opts = {} },
 
   { 'nvim-tree/nvim-web-devicons' },
-
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {}
+    end,
+  },
+  { 'LudoPinelli/comment-box.nvim' },
+  {
+    'andrewferrier/wrapping.nvim',
+    opts = {
+      create_commands = true,
+      create_kemaps = true,
+    },
+    config = function()
+      require('wrapping').setup()
+    end,
+  },
   {
     'stevearc/oil.nvim',
     opts = {
@@ -681,6 +704,105 @@ require('lazy').setup({
         gopls = {},
         pyright = {},
         rust_analyzer = {},
+        --tsserver = { enabled = false },
+        --ts_ls = { enabled = false },
+        denols = {
+          root_dir = require('lspconfig').util.root_pattern { 'deno.json', 'deno.jsonc' },
+          single_file_support = false,
+          settings = {},
+        },
+        vtsls = {
+          -- explicitly add default filetypes, so that we can extend
+          -- them in related extras
+          filetypes = {
+            'javascript',
+            'javascriptreact',
+            'javascript.jsx',
+            'typescript',
+            'typescriptreact',
+            'typescript.tsx',
+          },
+          settings = {
+            complete_function_calls = true,
+            vtsls = {
+              enableMoveToFileCodeAction = true,
+              autoUseWorkspaceTsdk = true,
+              experimental = {
+                maxInlayHintLength = 30,
+                completion = {
+                  enableServerSideFuzzyMatch = true,
+                },
+              },
+            },
+            typescript = {
+              updateImportsOnFileMove = { enabled = 'always' },
+              suggest = {
+                completeFunctionCalls = true,
+              },
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = true },
+                parameterNames = { enabled = 'literals' },
+                parameterTypes = { enabled = true },
+                propertyDeclarationTypes = { enabled = true },
+                variableTypes = { enabled = false },
+              },
+            },
+          },
+          keys = {
+            -- {
+            --   'gD',
+            --   function()
+            --     local params = vim.lsp.util.make_position_params()
+            --     LazyVim.lsp.execute {
+            --       command = 'typescript.goToSourceDefinition',
+            --       arguments = { params.textDocument.uri, params.position },
+            --       open = true,
+            --     }
+            --   end,
+            --   desc = 'Goto Source Definition',
+            -- },
+            -- {
+            --   'gR',
+            --   function()
+            --     LazyVim.lsp.execute {
+            --       command = 'typescript.findAllFileReferences',
+            --       arguments = { vim.uri_from_bufnr(0) },
+            --       open = true,
+            --     }
+            --   end,
+            --   desc = 'File References',
+            -- },
+            -- {
+            --   '<leader>co',
+            --   LazyVim.lsp.action['source.organizeImports'],
+            --   desc = 'Organize Imports',
+            -- },
+            -- {
+            --   '<leader>cM',
+            --   LazyVim.lsp.action['source.addMissingImports.ts'],
+            --   desc = 'Add missing imports',
+            -- },
+            -- {
+            --   '<leader>cu',
+            --   LazyVim.lsp.action['source.removeUnused.ts'],
+            --   desc = 'Remove unused imports',
+            -- },
+            -- {
+            --   '<leader>cD',
+            --   LazyVim.lsp.action['source.fixAll.ts'],
+            --   desc = 'Fix all diagnostics',
+            -- },
+            -- {
+            --   '<leader>cV',
+            --   function()
+            --     LazyVim.lsp.execute { command = 'typescript.selectTypeScriptVersion' }
+            --   end,
+            --   desc = 'Select TS workspace version',
+            -- },
+          },
+        },
+
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -778,6 +900,9 @@ require('lazy').setup({
           stdin = true,
           --         cwd = require('conform.util').root_file { 'dprint.json', '.dprint.json' },
         },
+        prettier = {
+          prepend_args = { '--print-width', '80', '--prose-wrap', 'always' },
+        },
       },
       formatters_by_ft = {
         lua = { 'stylua' },
@@ -789,6 +914,8 @@ require('lazy').setup({
         -- javascript = { { "prettierd", "prettier" } },
         javascript = { 'dprint' },
         svelte = { 'dprint' },
+        rust = { 'rustfmt' },
+        markdown = { 'prettier' },
       },
     },
   },
@@ -973,7 +1100,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'java' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'java', 'rust' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
